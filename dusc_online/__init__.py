@@ -43,12 +43,12 @@ class ExampleApp:
             
         self.file_paths = {
             'Label1': 'C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5',
-            'Label2': 'C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5',
-            'Label3': '/path/to/file3',
+            'Label2': 'C:/users/linol/Downloads/FOURD_250106_1729_24066_00005.h5',
+            'Label3': 'C:/users/linol/Downloads/FOURD_250106_1730_24067_00006.h5',
             }
 
         self.state.dataset_names = list(self.file_paths.values())
-        self.state.selected_dataset = self.state.dataset_names[0]
+        self.state.selected_dataset = self.state.dataset_names[1]
         
         self.setData(self.state.selected_dataset)
 
@@ -111,6 +111,15 @@ class ExampleApp:
             print('File path:', self.state.selected_dataset)
 
     def _build_ui(self):
+        # with SinglePageLayout(self.server) as layout2:
+            # with layout2.toolbar:
+                # vuetify.VSpacer()
+                # vuetify.VSelect(
+                    # label='Select Dataset',
+                    # items=('dataset_names',),
+                    # v_model=('selected_dataset',)
+                    # )
+        
         with DivLayout(self.server) as layout:
             self._ui = layout
 
@@ -122,16 +131,12 @@ class ExampleApp:
                             #app { height: 100%; }
                          """)
             
-            with html.Div(style="position: absolute; width: 100%; height: 10%; background-color: black;"):
-                with SinglePageLayout(self.server) as layout:
-                    with layout.toolbar:
-                        vuetify.VSpacer()
-                        vuetify.VSelect(
-                            label='Select Dataset',
-                            items=('dataset_names',),
-                            v_model=('selected_dataset',),
-        )
-
+            vuetify.VSelect(
+                    label='Select Dataset',
+                    items=('dataset_names',),
+                    v_model=('selected_dataset',)
+                    )
+            
             with html.Div(style="position: absolute; width: 50%; height: 100%; background-color: black;"):
                 with TrameImage(
                     src=("real_image",),
@@ -159,7 +164,7 @@ class ExampleApp:
                     "Reset Camera", style="position: absolute; left: 1rem; top: 1rem;",
                     click="diff_scale = 0.9; diff_center = [0.5, 0.5];"
                 )
-                
+                    
 
     def apply_colormap(self, data, shape, colormap, log):
         if log:
