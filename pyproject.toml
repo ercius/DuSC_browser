@@ -1,0 +1,65 @@
+[project]
+name = "dusc_online"
+version = "0.1.0"
+description = "A DuSC package using trame to explore 4D STEM data"
+authors = [
+    {name = "Alessandro Genova"},
+	{name = "Peter Ercius"},
+]
+dependencies = [
+    "trame_client>=3.5",
+    "trame_server>=3.3",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "Apache Software License"}
+keywords = ["Python", "Interactive", "Web", "Application", "Framework"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+quasar = [
+    "trame_quasar",
+]
+vuetify = [
+    "trame_vuetify",
+]
+
+[build-system]
+requires = ['setuptools', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+trame_image_tools = [
+    "**/*.js",
+    "**/*.css",
+]
+[tool.semantic_release]
+version_variables = [
+    "trame_image_tools/__init__.py:__version__",
+]
+version_toml = [
+    "pyproject.toml:project.version",
+]
+build_command = """
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install -U pip build
+  python -m build .
+"""
+
+[semantic_release.publish]
+dist_glob_patterns = ["dist/*"]
+upload_to_vcs_release = true
+
