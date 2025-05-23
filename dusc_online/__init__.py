@@ -1,15 +1,15 @@
+from pathlib import Path
+import base64
+from io import BytesIO
+
 from trame.decorators import change, TrameApp
 from trame.app import get_server
 from trame.widgets import html, client
 from trame.ui.html import DivLayout
 from trame_image_tools.widgets import TrameImage, TrameImageRoi
 from trame.ui.vuetify3 import SinglePageLayout
-
-
 from trame.widgets import vuetify3 as vuetify
 
-import base64
-from io import BytesIO
 import stempy.io as stio
 import numpy as np
 from numba import jit, prange
@@ -100,8 +100,13 @@ class ExampleApp:
         diff_im = Image.fromarray(diff_c_data)
         self.state.diff_image = self.convert_to_base64(diff_im)
 
-    @change('selected_dataset')
+    # @change('selected_dataset')
     def print_item(self, selected_dataset, **kwargs):
+        """ Print out the dataset name when the selection box is changed.
+        Uncomment @change to connect this to the selection box and comment out
+        elsewhere.
+        
+        """
         if not selected_dataset:
             print('No dataset selected')
             return
@@ -111,14 +116,6 @@ class ExampleApp:
             print('File path:', self.state.selected_dataset)
 
     def _build_ui(self):
-        # with SinglePageLayout(self.server) as layout2:
-            # with layout2.toolbar:
-                # vuetify.VSpacer()
-                # vuetify.VSelect(
-                    # label='Select Dataset',
-                    # items=('dataset_names',),
-                    # v_model=('selected_dataset',)
-                    # )
         
         with DivLayout(self.server) as layout:
             self._ui = layout
@@ -130,7 +127,7 @@ class ExampleApp:
                             body { height: 100%; margin: 0;}
                             #app { height: 100%; }
                          """)
-            
+            # Add a selection at the top
             vuetify.VSelect(
                     label='Select Dataset',
                     items=('dataset_names',),
@@ -186,9 +183,8 @@ class ExampleApp:
         img.save(buf, format="png")
         return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
-    # @change('selected_dataset')
-    # def setData(self, selected_dataset, **kwargs):
-    def setData(self, fPath):
+    @change('selected_dataset')
+    def setData(self, selected_dataset, **kwargs):
         """ Load the data from the HDF5 file. Must be in
         the format output by stempy.io.save_electron_data().
 
@@ -197,7 +193,10 @@ class ExampleApp:
         fPath : pathlib.Path
             The path of to the file to load.
         """
+        print(selected_dataset)
+        fPath = Path(selected_dataset)
         # Temporary: remove "full expansion" warning
+        
         stio.sparse_array._warning = lambda x : None
 
         # Load data as a SparseArray class
