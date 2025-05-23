@@ -3,6 +3,10 @@ from trame.app import get_server
 from trame.widgets import html, client
 from trame.ui.html import DivLayout
 from trame_image_tools.widgets import TrameImage, TrameImageRoi
+from trame.ui.vuetify3 import SinglePageLayout
+
+
+from trame.widgets import vuetify3 as vuetify
 
 import base64
 from io import BytesIO
@@ -36,9 +40,17 @@ class ExampleApp:
 
         self.state.real_space_roi = [0, 0, 10, 10]
         self.state.diffraction_space_roi = [0, 0, 10, 10]
+            
+        self.file_paths = {
+            'Label1': 'C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5',
+            'Label2': 'C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5',
+            'Label3': '/path/to/file3',
+            }
 
-        dataset = "C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5"
-        self.setData(dataset)
+        self.state.dataset_names = list(self.file_paths.values())
+        self.state.selected_dataset = self.state.dataset_names[0]
+        
+        self.setData(self.state.selected_dataset)
 
         self.ui = None
         self._build_ui()
@@ -88,6 +100,15 @@ class ExampleApp:
         diff_im = Image.fromarray(diff_c_data)
         self.state.diff_image = self.convert_to_base64(diff_im)
 
+    @change('selected_dataset')
+    def print_item(self, selected_dataset, **kwargs):
+        if not selected_dataset:
+            print('No dataset selected')
+            return
+
+        print('Selected dataset:', selected_dataset)
+        if selected_dataset:
+            print('File path:', self.state.selected_dataset)
 
     def _build_ui(self):
         with DivLayout(self.server) as layout:
@@ -100,6 +121,16 @@ class ExampleApp:
                             body { height: 100%; margin: 0;}
                             #app { height: 100%; }
                          """)
+            
+            with html.Div(style="position: absolute; width: 100%; height: 10%; background-color: black;"):
+                with SinglePageLayout(self.server) as layout:
+                    with layout.toolbar:
+                        vuetify.VSpacer()
+                        vuetify.VSelect(
+                            label='Select Dataset',
+                            items=('dataset_names',),
+                            v_model=('selected_dataset',),
+        )
 
             with html.Div(style="position: absolute; width: 50%; height: 100%; background-color: black;"):
                 with TrameImage(
@@ -128,6 +159,7 @@ class ExampleApp:
                     "Reset Camera", style="position: absolute; left: 1rem; top: 1rem;",
                     click="diff_scale = 0.9; diff_center = [0.5, 0.5];"
                 )
+                
 
     def apply_colormap(self, data, shape, colormap, log):
         if log:
@@ -149,6 +181,8 @@ class ExampleApp:
         img.save(buf, format="png")
         return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
+    # @change('selected_dataset')
+    # def setData(self, selected_dataset, **kwargs):
     def setData(self, fPath):
         """ Load the data from the HDF5 file. Must be in
         the format output by stempy.io.save_electron_data().
