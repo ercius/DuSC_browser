@@ -247,6 +247,7 @@ class ExampleApp:
 
         self.update_real()
         self.update_diffr()
+        # TODO: Reset the GUI elements when a new dataset is loaded.
 
     @staticmethod
     @jit(["uint32[:](uint32[:,:,:], uint32[:,:,:], int64, int64, int64, int64)"], nopython=True, nogil=True, parallel=True)
