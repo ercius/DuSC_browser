@@ -40,17 +40,17 @@ class ExampleApp:
 
         self.state.real_space_roi = [0, 0, 10, 10]
         self.state.diffraction_space_roi = [0, 0, 10, 10]
-            
-        self.file_paths = {
-            'Label1': 'C:/users/linol/Downloads/FOURD_250415_1407_27734_00011.h5',
-            'Label2': 'C:/users/linol/Downloads/FOURD_250106_1729_24066_00005.h5',
-            'Label3': 'C:/users/linol/Downloads/FOURD_250106_1730_24067_00006.h5',
-            }
-
-        self.state.dataset_names = list(self.file_paths.values())
-        self.state.selected_dataset = self.state.dataset_names[1]
         
-        self.setData(self.state.selected_dataset)
+        self.dir_path = Path('C:/users/linol/scripting/dusc_online/dusc_online/data')
+        self.file_paths = {}
+        for ii, file in enumerate(self.dir_path.glob('*.h5')):
+            self.file_paths[f'Dataset {ii}'] = str(file)
+        
+        # Send to server
+        self.state.file_paths = self.file_paths
+        self.state.dataset_names = list(self.file_paths.keys())
+        self.state.dataset_paths = list(self.file_paths.values())
+        self.state.selected_dataset = self.state.dataset_names[0]
 
         self.ui = None
         self._build_ui()
@@ -71,7 +71,7 @@ class ExampleApp:
     def update_real(self, *args, **kwargs):
         if not self.loaded:
             return
-
+        
         self.rs[:] = self.getImage_jit(self.fr_rows, self.fr_cols,
             self.state.diffraction_space_roi[1] - 1,
             self.state.diffraction_space_roi[1] + self.state.diffraction_space_roi[3] + 0,
@@ -125,9 +125,9 @@ class ExampleApp:
             client.Style("""
                             html { height: 100%; overflow: hidden;}
                             body { height: 100%; margin: 0;}
-                            #app { height: 100%; }
+                            # app { height: 100%; }
                          """)
-            # Add a selection at the top
+            # Add a Vselect at the top
             vuetify.VSelect(
                     label='Select Dataset',
                     items=('dataset_names',),
@@ -144,8 +144,9 @@ class ExampleApp:
                     TrameImageRoi(v_model=("real_space_roi",),)
 
                 html.Button(
-                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem;",
+                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem; color: white",
                     click="real_scale = 0.9; real_center = [0.5, 0.5];"
+                    #click="real_scale = 0.9; real_center = [0.5, 0.5];real_space_roi = [0,0,10,10]"
                 )
 
             with html.Div(style="position: absolute; left: 50%; width: 50%; height: 100%; background-color: black; border-left-style: solid; border-left-color: grey;"):
@@ -158,7 +159,7 @@ class ExampleApp:
                     TrameImageRoi(v_model=("diffraction_space_roi",),)
 
                 html.Button(
-                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem;",
+                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem; color: white",
                     click="diff_scale = 0.9; diff_center = [0.5, 0.5];"
                 )
                     
@@ -193,11 +194,9 @@ class ExampleApp:
         fPath : pathlib.Path
             The path of to the file to load.
         """
-        print(selected_dataset)
-        fPath = Path(selected_dataset)
+        fPath = Path(self.state.file_paths[selected_dataset])
         # Temporary: remove "full expansion" warning
-        
-        stio.sparse_array._warning = lambda x : None
+        # stio.sparse_array._warning = lambda x : None
 
         # Load data as a SparseArray class
         self.sa = stio.SparseArray.from_hdf5(str(fPath))
@@ -247,7 +246,14 @@ class ExampleApp:
 
         self.update_real()
         self.update_diffr()
-        # TODO: Reset the GUI elements when a new dataset is loaded.
+        
+        # Reset the images
+        self.state.diff_scale = 0.9
+        self.state.real_scale = 0.9
+        self.state.diff_center = [0.5, 0.5]
+        self.state.real_center = [0.5, 0.5]
+        
+        # TODO: Reset the local ROI elements when a new dataset is loaded.
 
     @staticmethod
     @jit(["uint32[:](uint32[:,:,:], uint32[:,:,:], int64, int64, int64, int64)"], nopython=True, nogil=True, parallel=True)
