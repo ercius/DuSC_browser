@@ -20,7 +20,7 @@ from PIL import Image
 
 @TrameApp()
 class DuSC_app:
-    def __init__(self, server=None, dir_path=None):
+    def __init__(self, server=None, path=None):
         self._server = get_server(server, client_type="vue3")
 
         self.loaded = False
@@ -41,11 +41,17 @@ class DuSC_app:
         self.state.real_space_roi = [0, 0, 10, 10]
         self.state.diffraction_space_roi = [0, 0, 10, 10]
         
-        
-        self.dir_path = Path(dir_path)
-        self.file_paths = {}
-        for ii, file in enumerate(self.dir_path.glob('*.h5')):
-            self.file_paths[f'Dataset {ii}'] = str(file)
+        # Change to string
+        if isinstance(path, str):
+            path = Path(path)
+        # Check for file or directory
+        if path.is_file():
+            self.file_paths = {path.name:str(path)}
+        elif path.is_dir():
+            self.dir_path = Path(path)
+            self.file_paths = {}
+            for ii, file in enumerate(self.dir_path.glob('*.h5')):
+                self.file_paths[file.name] = str(file)
         
         # Send to server
         self.state.file_paths = self.file_paths
@@ -196,8 +202,6 @@ class DuSC_app:
             The path of to the file to load.
         """
         fPath = Path(self.state.file_paths[selected_dataset])
-        # Temporary: remove "full expansion" warning
-        # stio.sparse_array._warning = lambda x : None
 
         # Load data as a SparseArray class
         self.sa = stio.SparseArray.from_hdf5(str(fPath))
@@ -206,7 +210,7 @@ class DuSC_app:
         self.scan_dimensions = self.sa.scan_shape
         self.frame_dimensions = self.sa.frame_shape
         self.num_frames_per_scan = self.sa.num_frames_per_scan
-        print('scan dimensions = {}'.format(self.scan_dimensions))
+        # print('scan dimensions = {}'.format(self.scan_dimensions))
 
         # Pre-calculate to speed things up
         # Create a non-ragged array with zero padding
@@ -214,15 +218,15 @@ class DuSC_app:
         for ev in self.sa.data.ravel():
             if ev.shape[0] > mm:
                 mm = ev.shape[0]
-        print('non-ragged array shape: {}'.format((self.sa.data.ravel().shape[0], mm)))
+        # print('non-ragged array shape: {}'.format((self.sa.data.ravel().shape[0], mm)))
 
         self.fr_full = np.zeros((self.sa.data.ravel().shape[0], mm), dtype=self.sa.data[0][0].dtype)
         for ii, ev in enumerate(self.sa.data.ravel()):
             self.fr_full[ii, :ev.shape[0]] = ev
         self.fr_full_3d = self.fr_full.reshape((*self.scan_dimensions, self.num_frames_per_scan, self.fr_full.shape[1]))
 
-        print('non-ragged array size = {} GB'.format(self.fr_full.nbytes / 1e9))
-        print('Full memory requirement = {} GB'.format(3 * self.fr_full.nbytes / 1e9))
+        # print('non-ragged array size = {} GB'.format(self.fr_full.nbytes / 1e9))
+        # print('Full memory requirement = {} GB'.format(3 * self.fr_full.nbytes / 1e9))
 
         # Find the row and col for each electron strike
         self.fr_rows = (self.fr_full // int(self.frame_dimensions[0])).reshape(self.scan_dimensions[0] * self.scan_dimensions[1], self.num_frames_per_scan, mm)
