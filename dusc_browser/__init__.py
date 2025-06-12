@@ -20,7 +20,7 @@ from PIL import Image
 
 @TrameApp()
 class DuSC_app:
-    def __init__(self, server=None):
+    def __init__(self, server=None, dir_path=None):
         self._server = get_server(server, client_type="vue3")
 
         self.loaded = False
@@ -41,7 +41,8 @@ class DuSC_app:
         self.state.real_space_roi = [0, 0, 10, 10]
         self.state.diffraction_space_roi = [0, 0, 10, 10]
         
-        self.dir_path = Path('C:/users/linol/scripting/dusc_online/dusc_online/data')
+        
+        self.dir_path = Path(dir_path)
         self.file_paths = {}
         for ii, file in enumerate(self.dir_path.glob('*.h5')):
             self.file_paths[f'Dataset {ii}'] = str(file)
