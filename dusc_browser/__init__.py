@@ -151,7 +151,7 @@ class DuSC_app:
                     TrameImageRoi(v_model=("real_space_roi",),)
 
                 html.Button(
-                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem; color: white",
+                    "Reset", style="position: absolute; left: 1rem; top: 1rem; color: white",
                     click="real_scale = 0.9; real_center = [0.5, 0.5];"
                     #click="real_scale = 0.9; real_center = [0.5, 0.5];real_space_roi = [0,0,10,10]"
                 )
@@ -166,7 +166,7 @@ class DuSC_app:
                     TrameImageRoi(v_model=("diffraction_space_roi",),)
 
                 html.Button(
-                    "Reset Camera", style="position: absolute; left: 1rem; top: 1rem; color: white",
+                    "Reset", style="position: absolute; left: 1rem; top: 1rem; color: white",
                     click="diff_scale = 0.9; diff_center = [0.5, 0.5];"
                 )
                     
