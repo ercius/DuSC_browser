@@ -19,7 +19,7 @@ from PIL import Image
 
 
 @TrameApp()
-class ExampleApp:
+class DuSC_app:
     def __init__(self, server=None):
         self._server = get_server(server, client_type="vue3")
 
@@ -330,7 +330,7 @@ class ExampleApp:
         return dp
 
 def main(server=None, **kwargs):
-    app = ExampleApp(server)
+    app = DuSC_app(server)
     app.server.start(**kwargs)
 
 
