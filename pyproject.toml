@@ -13,7 +13,7 @@ dependencies = [
     "stempy",
     "matplotlib",
     "numpy",
-    "PIL",
+    "pillow",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
