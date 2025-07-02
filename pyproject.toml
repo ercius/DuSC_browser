@@ -7,9 +7,12 @@ authors = [
      {name = "Peter Ercius"},
 ]
 dependencies = [
+    "trame",
     "trame-image-tools",
     "trame_client>=3.5",
     "trame_server>=3.3",
+    "trame_vuetify",
+    "numba",
     "stempy",
     "matplotlib",
     "numpy",
