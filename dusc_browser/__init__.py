@@ -17,6 +17,8 @@ from matplotlib import cm
 
 from PIL import Image
 
+__version__ = "0.2.0"
+
 
 @TrameApp()
 class DuSC_app:

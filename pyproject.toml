@@ -1,6 +1,6 @@
 [project]
 name = "dusc_browser"
-version = "0.1.0"
+version = "0.2.0"
 description = "A DuSC package using trame to explore 4D STEM data in a web browser."
 authors = [
     {name = "Alessandro Genova"},
@@ -33,14 +33,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-[project.optional-dependencies]
-quasar = [
-    "trame_quasar",
-]
-vuetify = [
-    "trame_vuetify",
-]
-
 [build-system]
 requires = ['setuptools', 'wheel']
 build-backend = 'setuptools.build_meta'
@@ -49,13 +41,13 @@ build-backend = 'setuptools.build_meta'
 where = ["."]
 
 [tool.setuptools.package-data]
-trame_image_tools = [
+dusc_browser = [
     "**/*.js",
     "**/*.css",
 ]
 [tool.semantic_release]
 version_variables = [
-    "trame_image_tools/__init__.py:__version__",
+    "dusc_browser/__init__.py:__version__",
 ]
 version_toml = [
     "pyproject.toml:project.version",
