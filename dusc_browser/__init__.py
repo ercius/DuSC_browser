@@ -50,7 +50,7 @@ class DuSC_app:
         elif path.is_dir():
             self.dir_path = Path(path)
             self.file_paths = {}
-            for ii, file in enumerate(self.dir_path.glob('*.h5')):
+            for file in sorted(self.dir_path.glob('*.h5')):
                 self.file_paths[file.name] = str(file)
         
         # Send to server
@@ -235,16 +235,16 @@ class DuSC_app:
         self.dp = np.zeros(self.frame_dimensions[0] * self.frame_dimensions[1], np.uint32)
         self.rs = np.zeros(self.scan_dimensions[0] * self.scan_dimensions[1], np.uint32)
 
-        self.state.real_space_roi[0] = int(self.scan_dimensions[0] // 4 + self.scan_dimensions[0] //8)
-        self.state.real_space_roi[1] = int(self.scan_dimensions[1] // 4 + self.scan_dimensions[1] //8)
-        self.state.real_space_roi[2] = int(self.scan_dimensions[0] // 4)
-        self.state.real_space_roi[3] = int(self.scan_dimensions[1] // 4)
+        self.state.real_space_roi[0] = int(self.scan_dimensions[1] // 4 + self.scan_dimensions[1] //8)
+        self.state.real_space_roi[1] = int(self.scan_dimensions[0] // 4 + self.scan_dimensions[0] //8)
+        self.state.real_space_roi[2] = int(self.scan_dimensions[1] // 4)
+        self.state.real_space_roi[3] = int(self.scan_dimensions[0] // 4)
         self.state.real_image_size = list(map(lambda x : int(x), self.scan_dimensions))
 
-        self.state.diffraction_space_roi[0] = int(self.frame_dimensions[0] // 4 + self.frame_dimensions[0] //8)
-        self.state.diffraction_space_roi[1] = int(self.frame_dimensions[1] // 4 + self.frame_dimensions[1] //8)
-        self.state.diffraction_space_roi[2] = int(self.frame_dimensions[0] // 4)
-        self.state.diffraction_space_roi[3] = int(self.frame_dimensions[1] // 4)
+        self.state.diffraction_space_roi[0] = int(self.frame_dimensions[1] // 4 + self.frame_dimensions[1] //8)
+        self.state.diffraction_space_roi[1] = int(self.frame_dimensions[0] // 4 + self.frame_dimensions[0] //8)
+        self.state.diffraction_space_roi[2] = int(self.frame_dimensions[1] // 4)
+        self.state.diffraction_space_roi[3] = int(self.frame_dimensions[0] // 4)
         self.state.diff_image_size = list(map(lambda x : int(x), self.frame_dimensions))
 
         self.loaded = True
