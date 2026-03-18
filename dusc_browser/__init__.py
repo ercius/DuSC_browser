@@ -42,6 +42,8 @@ class DuSC_app:
         self.state.diffraction_space_roi = [0, 0, 10, 10]
         
         # Change to string
+        if path is None:
+            raise ValueError("A path must be provided")
         if isinstance(path, str):
             path = Path(path)
         # Check for file or directory
@@ -52,6 +54,8 @@ class DuSC_app:
             self.file_paths = {}
             for file in sorted(self.dir_path.glob('*.h5')):
                 self.file_paths[file.name] = str(file)
+        else:
+            raise ValueError(f"Path does not exist: {path}")
         
         # Send to server
         self.state.file_paths = self.file_paths
@@ -334,10 +338,14 @@ class DuSC_app:
                             dp[pos] += 1
         return dp
 
-def main(server=None, **kwargs):
-    app = DuSC_app(server)
+def main(server=None, path=None, **kwargs):
+    app = DuSC_app(server, path=path)
     app.server.start(**kwargs)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path", type=Path, help="Path to an HDF5 file or directory containing HDF5 files")
+    args = parser.parse_args()
+    main(path=args.path)
