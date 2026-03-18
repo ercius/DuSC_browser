@@ -1,6 +1,9 @@
 from pathlib import Path
 import base64
 from io import BytesIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 from trame.decorators import change, TrameApp
 from trame.app import get_server
@@ -208,6 +211,7 @@ class DuSC_app:
             The path of to the file to load.
         """
         fPath = Path(self.state.file_paths[selected_dataset])
+        logger.info(f"Loading file: {fPath}")
 
         # Load data as a SparseArray class
         self.sa = stio.SparseArray.from_hdf5(str(fPath))
