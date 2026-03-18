@@ -243,12 +243,12 @@ class DuSC_app:
         self.state.real_space_roi[1] = int(self.scan_dimensions[0] // 4 + self.scan_dimensions[0] //8)
         self.state.real_space_roi[2] = int(self.scan_dimensions[1] // 4)
         self.state.real_space_roi[3] = int(self.scan_dimensions[0] // 4)
-        self.state.real_image_size = list(map(lambda x : int(x), self.scan_dimensions))
+        self.state.real_image_size = [int(self.scan_dimensions[1]), int(self.scan_dimensions[0])]
 
-        self.state.diffraction_space_roi[0] = int(self.frame_dimensions[1] // 4 + self.frame_dimensions[1] //8)
-        self.state.diffraction_space_roi[1] = int(self.frame_dimensions[0] // 4 + self.frame_dimensions[0] //8)
-        self.state.diffraction_space_roi[2] = int(self.frame_dimensions[1] // 4)
-        self.state.diffraction_space_roi[3] = int(self.frame_dimensions[0] // 4)
+        self.state.diffraction_space_roi[0] = int(self.frame_dimensions[0] // 4 + self.frame_dimensions[0] //8)
+        self.state.diffraction_space_roi[1] = int(self.frame_dimensions[1] // 4 + self.frame_dimensions[1] //8)
+        self.state.diffraction_space_roi[2] = int(self.frame_dimensions[0] // 4)
+        self.state.diffraction_space_roi[3] = int(self.frame_dimensions[1] // 4)
         self.state.diff_image_size = list(map(lambda x : int(x), self.frame_dimensions))
 
         self.loaded = True
