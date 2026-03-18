@@ -1,6 +1,9 @@
 from pathlib import Path
 import base64
 from io import BytesIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 from trame.decorators import change, TrameApp
 from trame.app import get_server
@@ -11,11 +14,14 @@ from trame.ui.vuetify3 import SinglePageLayout
 from trame.widgets import vuetify3 as vuetify
 
 import stempy.io as stio
+import h5py
 import numpy as np
 from numba import jit, prange
 from matplotlib import cm
 
 from PIL import Image
+
+__version__ = "0.2.0"
 
 
 @TrameApp()
@@ -42,6 +48,8 @@ class DuSC_app:
         self.state.diffraction_space_roi = [0, 0, 10, 10]
         
         # Change to string
+        if path is None:
+            raise ValueError("A path must be provided")
         if isinstance(path, str):
             path = Path(path)
         # Check for file or directory
@@ -50,8 +58,14 @@ class DuSC_app:
         elif path.is_dir():
             self.dir_path = Path(path)
             self.file_paths = {}
-            for ii, file in enumerate(self.dir_path.glob('*.h5')):
-                self.file_paths[file.name] = str(file)
+            for file in sorted(self.dir_path.glob('*.h5')):
+                with h5py.File(file, 'r') as f:
+                    if 'electron_events/frames' in f:
+                        self.file_paths[file.name] = str(file)
+                    else:
+                        logger.warning(f"Skipping unsupported file: {file.name}")
+        else:
+            raise ValueError(f"Path does not exist: {path}")
         
         # Send to server
         self.state.file_paths = self.file_paths
@@ -202,9 +216,14 @@ class DuSC_app:
             The path of to the file to load.
         """
         fPath = Path(self.state.file_paths[selected_dataset])
+        logger.info(f"Loading file: {fPath}")
 
         # Load data as a SparseArray class
-        self.sa = stio.SparseArray.from_hdf5(str(fPath))
+        try:
+            self.sa = stio.SparseArray.from_hdf5(str(fPath))
+        except KeyError:
+            logger.error(f"File not supported: {fPath}")
+            return
 
         self.sa.allow_full_expand = True
         self.scan_dimensions = self.sa.scan_shape
@@ -235,11 +254,11 @@ class DuSC_app:
         self.dp = np.zeros(self.frame_dimensions[0] * self.frame_dimensions[1], np.uint32)
         self.rs = np.zeros(self.scan_dimensions[0] * self.scan_dimensions[1], np.uint32)
 
-        self.state.real_space_roi[0] = int(self.scan_dimensions[0] // 4 + self.scan_dimensions[0] //8)
-        self.state.real_space_roi[1] = int(self.scan_dimensions[1] // 4 + self.scan_dimensions[1] //8)
-        self.state.real_space_roi[2] = int(self.scan_dimensions[0] // 4)
-        self.state.real_space_roi[3] = int(self.scan_dimensions[1] // 4)
-        self.state.real_image_size = list(map(lambda x : int(x), self.scan_dimensions))
+        self.state.real_space_roi[0] = int(self.scan_dimensions[1] // 4 + self.scan_dimensions[1] //8)
+        self.state.real_space_roi[1] = int(self.scan_dimensions[0] // 4 + self.scan_dimensions[0] //8)
+        self.state.real_space_roi[2] = int(self.scan_dimensions[1] // 4)
+        self.state.real_space_roi[3] = int(self.scan_dimensions[0] // 4)
+        self.state.real_image_size = [int(self.scan_dimensions[1]), int(self.scan_dimensions[0])]
 
         self.state.diffraction_space_roi[0] = int(self.frame_dimensions[0] // 4 + self.frame_dimensions[0] //8)
         self.state.diffraction_space_roi[1] = int(self.frame_dimensions[1] // 4 + self.frame_dimensions[1] //8)
@@ -334,10 +353,14 @@ class DuSC_app:
                             dp[pos] += 1
         return dp
 
-def main(server=None, **kwargs):
-    app = DuSC_app(server)
+def main(server=None, path=None, **kwargs):
+    app = DuSC_app(server, path=path)
     app.server.start(**kwargs)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path", type=Path, help="Path to an HDF5 file or directory containing HDF5 files")
+    args = parser.parse_args()
+    main(path=args.path)
