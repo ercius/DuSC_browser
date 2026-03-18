@@ -14,6 +14,7 @@ from trame.ui.vuetify3 import SinglePageLayout
 from trame.widgets import vuetify3 as vuetify
 
 import stempy.io as stio
+import h5py
 import numpy as np
 from numba import jit, prange
 from matplotlib import cm
@@ -58,7 +59,11 @@ class DuSC_app:
             self.dir_path = Path(path)
             self.file_paths = {}
             for file in sorted(self.dir_path.glob('*.h5')):
-                self.file_paths[file.name] = str(file)
+                with h5py.File(file, 'r') as f:
+                    if 'electron_events/frames' in f:
+                        self.file_paths[file.name] = str(file)
+                    else:
+                        logger.warning(f"Skipping unsupported file: {file.name}")
         else:
             raise ValueError(f"Path does not exist: {path}")
         
@@ -214,7 +219,11 @@ class DuSC_app:
         logger.info(f"Loading file: {fPath}")
 
         # Load data as a SparseArray class
-        self.sa = stio.SparseArray.from_hdf5(str(fPath))
+        try:
+            self.sa = stio.SparseArray.from_hdf5(str(fPath))
+        except KeyError:
+            logger.error(f"File not supported: {fPath}")
+            return
 
         self.sa.allow_full_expand = True
         self.scan_dimensions = self.sa.scan_shape
